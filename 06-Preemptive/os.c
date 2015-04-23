@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include "reg.h"
 #include "asm.h"
+#include "host.h"
 
 /* Size of our user task stacks in words */
 #define STACK_SIZE	256
@@ -103,6 +104,24 @@ void task2_func(void)
 	}
 }
 
+void semi(void)
+{
+	signed int handler=0;
+	print_str("semi working!!!\n");
+	handler=host_action(SYS_OPEN, "syslog", 4);
+	if(handler==-1)
+	{
+		print_str("error while open the file\n");
+	}
+	host_action(SYS_WRITE,handler,"Here is the message",30);
+	host_action(SYS_CLOSE,handler);
+	syscall();
+	while(1){
+		delay(100);
+	}
+}	
+	
+
 int main(void)
 {
 	unsigned int user_stacks[TASK_LIMIT][STACK_SIZE];
@@ -116,6 +135,7 @@ int main(void)
 	print_str("OS: First create task 1\n");
 	usertasks[0] = create_task(user_stacks[0], &task1_func);
 	task_count += 1;
+	semi();
 	print_str("OS: Back to OS, create task 2\n");
 	usertasks[1] = create_task(user_stacks[1], &task2_func);
 	task_count += 1;
